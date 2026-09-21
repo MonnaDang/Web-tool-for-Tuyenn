@@ -2,6 +2,13 @@ from __future__ import annotations
 
 import sys
 import traceback
+from pathlib import Path
+
+# Support both `python -m desktop.main` and direct IDE/script execution.
+if not __package__:
+    project_root = Path(__file__).resolve().parents[1]
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
 from PySide6.QtCore import QTimer
 from PySide6.QtGui import QIcon
