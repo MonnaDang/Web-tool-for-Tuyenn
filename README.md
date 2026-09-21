@@ -1,37 +1,68 @@
-# Web Tool for Tuyenn
+# Web Tool for Tuyennn
 
-A private local web toolbox. The first tool splits large videos into smaller playable MP4 files, keeps every part below a custom size limit, and can remove time from the beginning or end.
+A private video toolbox with both a Windows desktop app and the original local web version. Video processing happens on the computer through FFmpeg; files are not uploaded to an online service.
 
-## Features
+## Project layout
 
-- Master page ready for additional tools
-- Drag-and-drop or local file picker
-- Custom maximum part size
-- Optional beginning and end trims
-- Fast, lossless splitting at existing keyframes
-- Precise trimming through re-encoding
-- Download links for every completed part
-- Local-only processing: videos are never uploaded to an internet service
-
-## Run on Windows
-
-1. Double-click `Start Toolbox.bat`.
-2. The app opens at <http://127.0.0.1:4173/#video>.
-3. Keep the terminal window open while using the app.
-
-Or start it manually:
-
-```powershell
-node server.mjs
+```text
+Web-tool-for-Tuyenn/
+├── web/                 # Existing browser version
+├── desktop/
+│   ├── main.py          # PySide6 desktop entry point
+│   ├── ui/              # Windows and widgets
+│   ├── services/        # FFmpeg, settings, and updater logic
+│   └── resources/       # Theme, icon, and version metadata
+├── bin/                 # Local FFmpeg runtime (not committed to Git)
+├── Start Desktop Toolbox.bat
+├── Update Toolbox.bat
+└── README.md
 ```
 
-No npm installation is required. Node.js and FFmpeg/FFprobe must be available. The app automatically checks common Shutter Encoder, YoutubeDownloader, GNU Octave, and system PATH locations. You can also set `FFMPEG_PATH` and `FFPROBE_PATH`.
+## Run the Windows desktop app
 
-## Output and privacy
+Double-click `Start Desktop Toolbox.bat`. On its first run, it creates a private Python environment and installs PySide6. Later launches open the app directly.
 
-Generated parts are stored under `storage/jobs/` and are excluded from Git. The temporary local copy of the selected source video is removed after a successful job. The original video is never changed.
+The video chunker supports:
 
-## GitHub hosting note
+- drag-and-drop or local file selection;
+- a custom maximum size for every output file;
+- up to five output videos;
+- optional removal from the beginning and/or end;
+- fast lossless splitting or precise re-encoding;
+- background processing, progress, cancellation, and verified output files.
 
-GitHub hosts this project's source code. GitHub Pages cannot run the Node.js and FFmpeg processing service, so the working video chunker must be started locally or deployed to a server that supports Node.js and FFmpeg.
+For development:
 
+```powershell
+python -m venv .venv
+.venv\Scripts\python -m pip install -r desktop\requirements.txt
+.venv\Scripts\python -m desktop.main
+```
+
+## Update without uninstalling
+
+This app is portable and does not use a Windows installer.
+
+- In a Git checkout, open **Updates → Update from GitHub**, or double-click `Update Toolbox.bat`, then restart the app.
+- For a packaged release, extract the newer release over the existing application folder.
+- User preferences live in `%LOCALAPPDATA%\TuyennnToolbox`, outside the program folder, so an update does not remove them.
+- `resources/theme.qss` is external in a portable build. It can be replaced and reloaded from the Updates page without rebuilding the app.
+
+## Build a portable Windows release
+
+Place a complete compatible FFmpeg runtime in `bin`, including `ffmpeg.exe`, `ffprobe.exe`, and any DLLs those files require. Then run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File desktop\build_portable.ps1
+```
+
+The result is `dist\TuyennnToolbox`. Zip that folder for a GitHub Release. Native FFmpeg binaries are intentionally excluded from Git because GitHub Pages cannot run them and their licenses/builds should be managed explicitly per release.
+
+## Run the web version
+
+```powershell
+cd web
+npm start
+```
+
+Then open `http://127.0.0.1:4173/#video`. The web version still needs the local Node server because GitHub Pages alone cannot execute FFmpeg on a user's local files.

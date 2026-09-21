@@ -1,4 +1,17 @@
-storage/
-.sites-runtime/
+.venv/
+__pycache__/
+*.py[cod]
 *.log
 
+web/storage/
+storage/
+.sites-runtime/
+
+build*/
+dist*/
+*.spec
+
+# Native media binaries are copied locally or included in release assets.
+bin/*.exe
+bin/*.dll
+bin/*.pdb
