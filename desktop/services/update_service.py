@@ -17,6 +17,7 @@ class UpdateResult:
     title: str
     detail: str
     restart_required: bool = False
+    technical_detail: str = ""
 
 
 def can_update_from_git() -> bool:
@@ -27,8 +28,8 @@ def pull_latest_source() -> UpdateResult:
     if not can_update_from_git():
         return UpdateResult(
             False,
-            "Portable update available through Releases",
-            f"Download the newest portable archive from {releases_url()} and replace the application folder. Your settings remain in Local AppData.",
+            "Cập nhật bằng bản phát hành",
+            f"Hãy tải bản mới từ {releases_url()} rồi giải nén đè lên thư mục ứng dụng cũ. Các tùy chọn đã lưu vẫn được giữ nguyên.",
         )
 
     process = subprocess.run(
@@ -43,7 +44,12 @@ def pull_latest_source() -> UpdateResult:
     )
     output = (process.stdout + "\n" + process.stderr).strip()
     if process.returncode != 0:
-        return UpdateResult(False, "Update could not be applied", output or "Git stopped without details.")
+        return UpdateResult(
+            False,
+            "Không thể cập nhật",
+            "Không thể tải bản mới. Hãy kiểm tra kết nối mạng rồi thử lại.",
+            technical_detail=output or "Git stopped without details.",
+        )
     if "Already up to date" in output:
-        return UpdateResult(True, "You already have the latest version", output)
-    return UpdateResult(True, "Update downloaded", output, restart_required=True)
+        return UpdateResult(True, "Ứng dụng đã là bản mới nhất", "Không cần cập nhật thêm lúc này.")
+    return UpdateResult(True, "Đã tải bản cập nhật", "Bản mới đã sẵn sàng.", restart_required=True)

@@ -1,3 +1,4 @@
+/* Midnight Mint — canonical desktop theme */
 QWidget {
     color: #f4f8fb;
     font-family: "Segoe UI";
@@ -31,7 +32,11 @@ QLabel#StatusBadge {
     border-radius: 14px; padding: 7px 11px; font-weight: 700;
 }
 
-QPushButton { cursor: pointinghand; }
+QPushButton {
+    min-height: 40px; padding: 0 14px; color: #f4f8fb; background: #162a42;
+    border: 1px solid #2b435a; border-radius: 10px; font-weight: 700;
+}
+QPushButton:hover { border-color: #5de2c7; }
 QPushButton#NavButton {
     min-height: 44px; padding: 0 14px; text-align: left; color: #9fb1c2;
     background: transparent; border: 1px solid transparent; border-radius: 11px;
@@ -64,7 +69,10 @@ QPushButton#DangerButton {
     min-height: 40px; padding: 0 14px; color: #ffdadd; background: #3b202b;
     border: 1px solid #63313c; border-radius: 10px; font-weight: 700;
 }
-QPushButton#LinkButton { color: #5de2c7; background: transparent; border: none; font-weight: 700; }
+QPushButton#LinkButton {
+    min-height: 0; padding: 4px 2px; color: #5de2c7; background: transparent;
+    border: none; font-weight: 700;
+}
 
 QLineEdit, QDoubleSpinBox {
     min-height: 42px; padding: 0 11px; color: #f4f8fb; background: #061320;
@@ -72,6 +80,10 @@ QLineEdit, QDoubleSpinBox {
 }
 QLineEdit:focus, QDoubleSpinBox:focus { border-color: #5de2c7; }
 QLineEdit:read-only { color: #b8c6d3; background: #0a1725; }
+QPlainTextEdit {
+    color: #dce7ef; background: #061320; border: 1px solid #263b50;
+    border-radius: 9px; padding: 8px;
+}
 
 QRadioButton { spacing: 9px; color: #dce7ef; font-weight: 650; }
 QRadioButton::indicator { width: 16px; height: 16px; border-radius: 8px; border: 1px solid #476077; background: #081624; }

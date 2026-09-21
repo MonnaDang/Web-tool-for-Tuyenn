@@ -25,8 +25,8 @@ def install_exception_handler() -> None:
         log_path.write_text(detail, encoding="utf-8")
         QMessageBox.critical(
             None,
-            "Tuyennn Toolbox stopped unexpectedly",
-            f"A diagnostic report was saved to:\n{log_path}",
+            "Có lỗi xảy ra",
+            f"Ứng dụng đã dừng ngoài ý muốn. Báo cáo kỹ thuật được lưu tại:\n{log_path}",
         )
 
     sys.excepthook = handle_exception
@@ -34,8 +34,8 @@ def install_exception_handler() -> None:
 
 def main() -> int:
     application = QApplication(sys.argv)
-    application.setApplicationName("Tuyennn Toolbox")
-    application.setApplicationDisplayName("Tuyennn Toolbox")
+    application.setApplicationName("Hộp công cụ Tuyennn")
+    application.setApplicationDisplayName("Hộp công cụ Tuyennn")
     application.setApplicationVersion(APP_VERSION)
     application.setOrganizationName("Tuyennn")
     application.setWindowIcon(QIcon(str(resource_path("app_icon.svg"))))

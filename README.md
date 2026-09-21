@@ -1,12 +1,12 @@
-# Web Tool for Tuyennn
+# Tuyennn Toolbox
 
-A private video toolbox with both a Windows desktop app and the original local web version. Video processing happens on the computer through FFmpeg; files are not uploaded to an online service.
+A private Windows desktop toolbox built with Python and PySide6. Video processing happens on the computer through FFmpeg; files are not uploaded to an online service. The desktop GUI follows the Vietnamese-first **Midnight Mint** design system.
 
 ## Project layout
 
 ```text
 Web-tool-for-Tuyenn/
-├── web/                 # Existing browser version
+├── web/                 # Deprecated browser snapshot; no further development
 ├── desktop/
 │   ├── main.py          # PySide6 desktop entry point
 │   ├── ui/              # Windows and widgets
@@ -58,11 +58,6 @@ powershell -ExecutionPolicy Bypass -File desktop\build_portable.ps1
 
 The result is `dist\TuyennnToolbox`. Zip that folder for a GitHub Release. Native FFmpeg binaries are intentionally excluded from Git because GitHub Pages cannot run them and their licenses/builds should be managed explicitly per release.
 
-## Run the web version
+## Deprecated web version
 
-```powershell
-cd web
-npm start
-```
-
-Then open `http://127.0.0.1:4173/#video`. The web version still needs the local Node server because GitHub Pages alone cannot execute FFmpeg on a user's local files.
+The former browser version remains under `web/` as an archived snapshot. It receives no new features, interface updates, or routine maintenance. All future work targets the Windows desktop GUI.

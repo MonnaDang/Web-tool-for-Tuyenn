@@ -72,12 +72,12 @@ def parse_time(value: str) -> float:
             return float(text)
         parts = [float(part) for part in text.split(":")]
     except ValueError as error:
-        raise ValueError("Use seconds, MM:SS, or HH:MM:SS for trim values.") from error
+        raise ValueError("Hãy nhập số giây, MM:SS hoặc HH:MM:SS.") from error
     if len(parts) == 2:
         return parts[0] * 60 + parts[1]
     if len(parts) == 3:
         return parts[0] * 3600 + parts[1] * 60 + parts[2]
-    raise ValueError("Use seconds, MM:SS, or HH:MM:SS for trim values.")
+    raise ValueError("Hãy nhập số giây, MM:SS hoặc HH:MM:SS.")
 
 
 class DropArea(QFrame):
@@ -102,13 +102,13 @@ class DropArea(QFrame):
             "font-size: 30px; color: #5de2c7; background: #0d2c35; border: 1px solid #1c5056; border-radius: 15px;"
             "min-width: 58px; max-width: 58px; min-height: 58px; max-height: 58px;"
         )
-        title = QLabel("Drop a video here")
+        title = QLabel("Kéo video vào đây")
         title.setObjectName("SectionTitle")
         title.setAlignment(Qt.AlignCenter)
-        detail = QLabel("or choose a file from this computer")
+        detail = QLabel("hoặc chọn một file từ máy tính")
         detail.setObjectName("Muted")
         detail.setAlignment(Qt.AlignCenter)
-        choose = QPushButton("Choose video")
+        choose = QPushButton("Chọn video")
         choose.setObjectName("SecondaryButton")
         choose.clicked.connect(self.browse_requested)
 
@@ -156,7 +156,7 @@ class MainWindow(QMainWindow):
         self.worker: VideoWorker | None = None
         self._busy = False
 
-        self.setWindowTitle(f"Tuyennn Toolbox {APP_VERSION}")
+        self.setWindowTitle(f"Hộp công cụ Tuyennn {APP_VERSION}")
         self.setWindowIcon(QIcon(str(resource_path("app_icon.svg"))))
         self.resize(1260, 820)
         self.setMinimumSize(980, 680)
@@ -185,7 +185,7 @@ class MainWindow(QMainWindow):
         brand_copy.setSpacing(0)
         brand_title = QLabel("Tuyennn")
         brand_title.setObjectName("BrandTitle")
-        brand_subtitle = QLabel("Desktop toolbox")
+        brand_subtitle = QLabel("Một góc nhỏ của cậu")
         brand_subtitle.setObjectName("BrandSubtitle")
         brand_copy.addWidget(brand_title)
         brand_copy.addWidget(brand_subtitle)
@@ -197,9 +197,9 @@ class MainWindow(QMainWindow):
 
         self.nav_group = QButtonGroup(self)
         self.nav_group.setExclusive(True)
-        self.overview_nav = self._nav_button("Overview", 0)
-        self.video_nav = self._nav_button("Video chunker", 1)
-        self.updates_nav = self._nav_button("Updates", 2)
+        self.overview_nav = self._nav_button("Trang chủ", 0)
+        self.video_nav = self._nav_button("Chia video", 1)
+        self.updates_nav = self._nav_button("Cập nhật", 2)
         sidebar_layout.addWidget(self.overview_nav)
         sidebar_layout.addWidget(self.video_nav)
         sidebar_layout.addWidget(self.updates_nav)
@@ -210,9 +210,9 @@ class MainWindow(QMainWindow):
         status_layout = QVBoxLayout(status_card)
         status_layout.setContentsMargins(13, 12, 13, 12)
         status_layout.setSpacing(3)
-        status_title = QLabel("●  Private by design")
+        status_title = QLabel("●  Riêng tư trên máy")
         status_title.setStyleSheet("color:#5de2c7; font-weight:700;")
-        self.tool_status = QLabel("Checking local video tools…")
+        self.tool_status = QLabel("Đang chuẩn bị…")
         self.tool_status.setObjectName("BrandSubtitle")
         self.tool_status.setWordWrap(True)
         status_layout.addWidget(status_title)
@@ -275,7 +275,7 @@ class MainWindow(QMainWindow):
 
     def _build_overview_page(self) -> QWidget:
         page, layout = self._page_container()
-        layout.addLayout(self._heading("Local workspace", "Your practical file toolbox.", "Prepare videos privately on this computer without uploading them to an online service."))
+        layout.addLayout(self._heading("GÓC NHỎ CỦA CẬU", "Công cụ gọn nhẹ, dùng ngay trên máy.", "Chuẩn bị video riêng tư mà không cần gửi file lên mạng."))
         layout.addSpacing(18)
 
         card = QFrame()
@@ -288,17 +288,17 @@ class MainWindow(QMainWindow):
         symbol.setAlignment(Qt.AlignCenter)
         copy = QVBoxLayout()
         copy.setSpacing(6)
-        title = QLabel("Video chunker")
+        title = QLabel("Chia video")
         title.setObjectName("CardTitle")
-        detail = QLabel("Split large videos into size-limited playable parts, with optional beginning and end trims.")
+        detail = QLabel("Chia video lớn thành các phần dễ gửi, đồng thời có thể bỏ bớt đoạn đầu hoặc cuối.")
         detail.setObjectName("Muted")
         detail.setWordWrap(True)
-        ready = QLabel("READY TO USE")
+        ready = QLabel("SẴN SÀNG")
         ready.setObjectName("PageKicker")
         copy.addWidget(ready)
         copy.addWidget(title)
         copy.addWidget(detail)
-        open_button = QPushButton("Open tool  →")
+        open_button = QPushButton("Mở công cụ  →")
         open_button.setObjectName("PrimaryButton")
         open_button.clicked.connect(lambda: self._show_page(1))
         card_layout.addWidget(symbol, 0, Qt.AlignTop)
@@ -311,8 +311,8 @@ class MainWindow(QMainWindow):
     def _build_video_page(self) -> QWidget:
         page, layout = self._page_container()
         heading_row = QHBoxLayout()
-        heading_row.addLayout(self._heading("Tool 01", "Video chunker", "Choose a video, set the maximum part size, and optionally remove time from either end."), 1)
-        local_badge = QLabel("●  LOCAL PROCESSING")
+        heading_row.addLayout(self._heading("CÔNG CỤ 01", "Chia video", "Chọn video, đặt dung lượng tối đa và bỏ bớt đoạn đầu hoặc cuối nếu cần."), 1)
+        local_badge = QLabel("●  XỬ LÝ TRÊN MÁY")
         local_badge.setObjectName("StatusBadge")
         heading_row.addWidget(local_badge, 0, Qt.AlignTop)
         layout.addLayout(heading_row)
@@ -351,7 +351,7 @@ class MainWindow(QMainWindow):
         panel_layout = QVBoxLayout(panel)
         panel_layout.setContentsMargins(23, 22, 23, 23)
         panel_layout.setSpacing(18)
-        panel_layout.addLayout(self._panel_header("1", "Choose a video", "The original file is never modified."))
+        panel_layout.addLayout(self._panel_header("1", "Chọn video", "File gốc luôn được giữ nguyên."))
 
         self.drop_area = DropArea()
         self.drop_area.browse_requested.connect(self._choose_file)
@@ -375,7 +375,7 @@ class MainWindow(QMainWindow):
         self.file_details_label.setObjectName("FileDetails")
         file_copy.addWidget(self.file_name_label)
         file_copy.addWidget(self.file_details_label)
-        change = QPushButton("Change")
+        change = QPushButton("Thay đổi")
         change.setObjectName("LinkButton")
         change.clicked.connect(self._choose_file)
         selected_layout.addWidget(icon)
@@ -403,9 +403,9 @@ class MainWindow(QMainWindow):
         panel_layout = QVBoxLayout(panel)
         panel_layout.setContentsMargins(23, 22, 23, 23)
         panel_layout.setSpacing(15)
-        panel_layout.addLayout(self._panel_header("2", "Part settings", "Every part stays under your limit, with no more than five parts."))
+        panel_layout.addLayout(self._panel_header("2", "Thiết lập các phần", "Mỗi phần nằm dưới giới hạn và tổng cộng không quá năm phần."))
 
-        max_layout, max_hint = self._field_label("Maximum part size", "A little headroom is applied automatically.")
+        max_layout, max_hint = self._field_label("Dung lượng tối đa mỗi phần", "Ứng dụng sẽ tự chừa một khoảng an toàn nhỏ.")
         self.max_size = QDoubleSpinBox()
         self.max_size.setRange(1, 2048)
         self.max_size.setDecimals(1)
@@ -419,13 +419,13 @@ class MainWindow(QMainWindow):
 
         trim_row = QHBoxLayout()
         trim_row.setSpacing(12)
-        start_layout, start_hint = self._field_label("Remove from beginning", "HH:MM:SS or seconds")
+        start_layout, start_hint = self._field_label("Bỏ bớt đoạn đầu", "HH:MM:SS hoặc số giây")
         self.trim_start = QLineEdit("00:00:00")
         self.trim_start.setPlaceholderText("00:00:00")
         start_layout.addWidget(self.trim_start)
         if start_hint:
             start_layout.addWidget(start_hint)
-        end_layout, end_hint = self._field_label("Remove from end", "HH:MM:SS or seconds")
+        end_layout, end_hint = self._field_label("Bỏ bớt đoạn cuối", "HH:MM:SS hoặc số giây")
         self.trim_end = QLineEdit("00:00:00")
         self.trim_end.setPlaceholderText("00:00:00")
         end_layout.addWidget(self.trim_end)
@@ -435,20 +435,22 @@ class MainWindow(QMainWindow):
         trim_row.addLayout(end_layout)
         panel_layout.addLayout(trim_row)
 
-        mode_label = QLabel("Processing mode")
+        mode_label = QLabel("Cách chia video")
         mode_label.setStyleSheet("font-weight:700;")
         panel_layout.addWidget(mode_label)
-        self.fast_mode = QRadioButton("Fast & lossless — keeps original quality")
-        self.precise_mode = QRadioButton("Precise trim — re-encodes for exact cuts")
+        self.fast_mode = QRadioButton("Nhanh — giữ nguyên chất lượng gốc")
+        self.precise_mode = QRadioButton("Chính xác — cắt đúng thời điểm đã chọn")
+        self.fast_mode.setToolTip("Nhanh hơn, nhưng điểm cắt có thể lệch nhẹ để video vẫn phát tốt.")
+        self.precise_mode.setToolTip("Mất nhiều thời gian hơn để điểm cắt chính xác.")
         self.fast_mode.setChecked(True)
         panel_layout.addWidget(self.fast_mode)
         panel_layout.addWidget(self.precise_mode)
 
-        output_layout, output_hint = self._field_label("Output location", "A new uniquely named parts folder is created here.")
+        output_layout, output_hint = self._field_label("Nơi lưu kết quả", "Một thư mục mới sẽ được tạo để giữ các phần video.")
         output_row = QHBoxLayout()
         self.output_path = QLineEdit()
         self.output_path.setReadOnly(True)
-        browse_output = QPushButton("Browse")
+        browse_output = QPushButton("Chọn thư mục")
         browse_output.setObjectName("SecondaryButton")
         browse_output.clicked.connect(self._choose_output_folder)
         output_row.addWidget(self.output_path, 1)
@@ -459,12 +461,12 @@ class MainWindow(QMainWindow):
         panel_layout.addLayout(output_layout)
 
         action_row = QHBoxLayout()
-        self.process_button = QPushButton("Create video parts  →")
+        self.process_button = QPushButton("Chia video  →")
         self.process_button.setObjectName("PrimaryButton")
         self.process_button.setEnabled(False)
         self.process_button.clicked.connect(self._start_processing)
-        self.cancel_button = QPushButton("Cancel")
-        self.cancel_button.setObjectName("DangerButton")
+        self.cancel_button = QPushButton("Hủy")
+        self.cancel_button.setObjectName("SecondaryButton")
         self.cancel_button.setVisible(False)
         self.cancel_button.clicked.connect(self._cancel_processing)
         action_row.addWidget(self.process_button, 1)
@@ -482,13 +484,13 @@ class MainWindow(QMainWindow):
         header = QHBoxLayout()
         result_copy = QVBoxLayout()
         result_copy.setSpacing(2)
-        self.result_title = QLabel("Your parts will appear here")
+        self.result_title = QLabel("Các phần video sẽ xuất hiện ở đây")
         self.result_title.setObjectName("SectionTitle")
-        self.result_meta = QLabel("Each result will be a separate, playable MP4 file.")
+        self.result_meta = QLabel("Mỗi kết quả là một video riêng và có thể mở ngay.")
         self.result_meta.setObjectName("ResultMeta")
         result_copy.addWidget(self.result_title)
         result_copy.addWidget(self.result_meta)
-        self.open_folder_button = QPushButton("Open output folder")
+        self.open_folder_button = QPushButton("Mở thư mục kết quả")
         self.open_folder_button.setObjectName("SecondaryButton")
         self.open_folder_button.setVisible(False)
         self.open_folder_button.clicked.connect(self._open_output_folder)
@@ -505,7 +507,7 @@ class MainWindow(QMainWindow):
 
         self.results_tree = QTreeWidget()
         self.results_tree.setColumnCount(4)
-        self.results_tree.setHeaderLabels(["Part", "Duration", "Size", "Action"])
+        self.results_tree.setHeaderLabels(["Phần", "Thời lượng", "Dung lượng", "Thao tác"])
         self.results_tree.header().setSectionResizeMode(0, QHeaderView.Stretch)
         self.results_tree.header().setSectionResizeMode(1, QHeaderView.ResizeToContents)
         self.results_tree.header().setSectionResizeMode(2, QHeaderView.ResizeToContents)
@@ -517,7 +519,7 @@ class MainWindow(QMainWindow):
 
     def _build_updates_page(self) -> QWidget:
         page, layout = self._page_container()
-        layout.addLayout(self._heading("Maintenance", "Update without uninstalling.", "The app uses a portable folder and stores personal settings separately in Windows Local AppData."))
+        layout.addLayout(self._heading("BẢO TRÌ", "Cập nhật mà không cần gỡ ứng dụng.", "Tùy chọn cá nhân được giữ riêng nên vẫn còn nguyên sau mỗi lần cập nhật."))
         layout.addSpacing(16)
 
         card = QFrame()
@@ -525,22 +527,22 @@ class MainWindow(QMainWindow):
         card_layout = QVBoxLayout(card)
         card_layout.setContentsMargins(24, 22, 24, 24)
         card_layout.setSpacing(11)
-        title = QLabel(f"Tuyennn Toolbox {APP_VERSION}")
+        title = QLabel(f"Hộp công cụ Tuyennn {APP_VERSION}")
         title.setObjectName("CardTitle")
         detail = QLabel(
-            "Source checkout: use Update from GitHub, then restart. Portable release: extract the newer archive over the existing application folder. Your saved preferences remain untouched."
+            "Nếu nút cập nhật khả dụng, chỉ cần tải bản mới rồi khởi động lại. Với bản gửi qua file ZIP, giải nén bản mới đè lên thư mục ứng dụng cũ. Các tùy chọn đã lưu vẫn được giữ nguyên."
         )
         detail.setObjectName("Muted")
         detail.setWordWrap(True)
         button_row = QHBoxLayout()
-        self.update_button = QPushButton("Update from GitHub")
+        self.update_button = QPushButton("Cập nhật ứng dụng")
         self.update_button.setObjectName("PrimaryButton")
         self.update_button.setEnabled(can_update_from_git())
         self.update_button.clicked.connect(self._update_from_git)
-        releases_button = QPushButton("Open Releases")
+        releases_button = QPushButton("Xem bản phát hành")
         releases_button.setObjectName("SecondaryButton")
         releases_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(releases_url())))
-        reload_button = QPushButton("Reload appearance")
+        reload_button = QPushButton("Tải lại giao diện")
         reload_button.setObjectName("SecondaryButton")
         reload_button.clicked.connect(self._reload_theme)
         button_row.addWidget(self.update_button)
@@ -557,7 +559,7 @@ class MainWindow(QMainWindow):
         settings_card.setObjectName("UpdateCard")
         settings_layout = QVBoxLayout(settings_card)
         settings_layout.setContentsMargins(24, 20, 24, 20)
-        settings_title = QLabel("Persistent settings")
+        settings_title = QLabel("Tùy chọn được giữ lại tại")
         settings_title.setObjectName("SectionTitle")
         settings_path = QLabel(self.settings.path)
         settings_path.setObjectName("Muted")
@@ -588,17 +590,17 @@ class MainWindow(QMainWindow):
     def _refresh_tool_status(self) -> None:
         try:
             ffmpeg, ffprobe = locate_video_tools()
-            self.tool_status.setText(f"Ready · {ffmpeg.name} + {ffprobe.name}")
+            self.tool_status.setText("Sẵn sàng · không tải file lên mạng")
         except FileNotFoundError:
-            self.tool_status.setText("FFmpeg runtime missing")
+            self.tool_status.setText("Thiếu công cụ xử lý video")
 
     def _choose_file(self) -> None:
         initial = str(self.settings.value("video/input_directory", str(Path.home())))
         selected, _ = QFileDialog.getOpenFileName(
             self,
-            "Choose a video",
+            "Chọn video",
             initial,
-            "Video files (*.mp4 *.mov *.mkv *.webm *.avi *.m4v);;All files (*.*)",
+            "Video (*.mp4 *.mov *.mkv *.webm *.avi *.m4v);;Tất cả file (*.*)",
         )
         if selected:
             self._set_input_file(selected)
@@ -606,23 +608,23 @@ class MainWindow(QMainWindow):
     def _set_input_file(self, selected: str) -> None:
         path = Path(selected)
         if not path.is_file():
-            QMessageBox.warning(self, "Video not found", "The selected file is no longer available.")
+            QMessageBox.warning(self, "Không tìm thấy video", "Video đã chọn không còn ở vị trí cũ. Hãy chọn lại một file khác.")
             return
         self.input_path = path.resolve()
         self.file_name_label.setText(path.name)
-        self.file_details_label.setText(f"{format_bytes(path.stat().st_size)} · ready to process")
+        self.file_details_label.setText(f"{format_bytes(path.stat().st_size)} · sẵn sàng")
         self.drop_area.setVisible(False)
         self.selected_file.setVisible(True)
         self.process_button.setEnabled(not self._busy)
         self.settings.set_value("video/input_directory", str(path.parent))
         if not self.output_path.text():
             self.output_path.setText(str(path.parent))
-        self.result_title.setText("Your parts will appear here")
-        self.result_meta.setText("Each result will be a separate, playable MP4 file.")
+        self.result_title.setText("Các phần video sẽ xuất hiện ở đây")
+        self.result_meta.setText("Mỗi kết quả là một video riêng và có thể mở ngay.")
 
     def _choose_output_folder(self) -> None:
         initial = self.output_path.text() or str(self.input_path.parent if self.input_path else Path.home())
-        selected = QFileDialog.getExistingDirectory(self, "Choose output location", initial)
+        selected = QFileDialog.getExistingDirectory(self, "Chọn nơi lưu kết quả", initial)
         if selected:
             self.output_path.setText(selected)
             self.settings.set_value("video/output_parent", selected)
@@ -634,14 +636,14 @@ class MainWindow(QMainWindow):
             trim_start = parse_time(self.trim_start.text())
             trim_end = parse_time(self.trim_end.text())
             if trim_start < 0 or trim_end < 0:
-                raise ValueError("Trim values cannot be negative.")
+                raise ValueError("Thời gian bỏ bớt không thể là số âm.")
         except ValueError as error:
-            QMessageBox.warning(self, "Check trim values", str(error))
+            QMessageBox.warning(self, "Kiểm tra thời gian", str(error))
             return
 
         output_parent = Path(self.output_path.text())
         if not output_parent.is_dir():
-            QMessageBox.warning(self, "Choose an output location", "Select an existing folder for the finished video parts.")
+            QMessageBox.warning(self, "Chọn nơi lưu kết quả", "Hãy chọn một thư mục đang tồn tại để lưu các phần video.")
             return
 
         mode = "precise" if self.precise_mode.isChecked() else "fast"
@@ -664,8 +666,8 @@ class MainWindow(QMainWindow):
         self.open_folder_button.setVisible(False)
         self.progress.setValue(0)
         self.progress.setVisible(True)
-        self.result_title.setText("Preparing video…")
-        self.result_meta.setText("Reading the source and calculating safe part boundaries.")
+        self.result_title.setText("Đang chuẩn bị…")
+        self.result_meta.setText("Ứng dụng đang đọc video và chuẩn bị các phần phù hợp.")
 
         self.worker_thread = QThread(self)
         self.worker = VideoWorker(config)
@@ -684,21 +686,74 @@ class MainWindow(QMainWindow):
     def _set_busy(self, busy: bool) -> None:
         self._busy = busy
         self.process_button.setEnabled(not busy and self.input_path is not None)
-        self.process_button.setText("Working…" if busy else "Create video parts  →")
+        self.process_button.setText("Đang chia video…" if busy else "Chia video  →")
         self.cancel_button.setVisible(busy)
 
     def _on_progress(self, value: int, text: str) -> None:
         self.progress.setValue(max(self.progress.value(), value))
-        self.result_title.setText(text)
-        self.result_meta.setText(f"{self.progress.value()}% complete · keep this window open")
+        self.result_title.setText(self._friendly_progress(text))
+        self.result_meta.setText(f"Đã hoàn thành {self.progress.value()}% · hãy giữ cửa sổ này mở")
+
+    @staticmethod
+    def _friendly_progress(detail: str) -> str:
+        if detail.startswith("Reading video"):
+            return "Đang đọc video…"
+        if detail.startswith("Creating"):
+            return "Đang chia video…"
+        if detail.startswith("Verifying"):
+            return "Sắp xong rồi…"
+        if detail.startswith("Video parts"):
+            return "Các phần video đã sẵn sàng"
+        return "Đang chuẩn bị…"
+
+    @staticmethod
+    def _friendly_error(detail: str) -> str:
+        lowered = detail.lower()
+        if "ffmpeg" in lowered or "ffprobe" in lowered or "video tool" in lowered:
+            return "Không thể chuẩn bị công cụ xử lý video.\n\nHãy mở lại ứng dụng rồi thử lần nữa."
+        if "readable video stream" in lowered or "does not contain" in lowered:
+            return "Không thể mở video này.\n\nHãy chọn một video khác rồi thử lại."
+        if "trims remove the whole video" in lowered:
+            return "Khoảng thời gian đã chọn làm video không còn nội dung.\n\nHãy giảm phần bỏ ở đầu hoặc cuối."
+        if "five-part limit" in lowered or "selected limit" in lowered or "keyframe" in lowered:
+            return "Video này không thể chia thành tối đa năm phần với dung lượng đã chọn.\n\nHãy tăng dung lượng mỗi phần, cắt bớt video hoặc chọn cách chia chính xác."
+        if "maximum part size" in lowered:
+            return "Dung lượng mỗi phần chưa phù hợp.\n\nHãy chọn một giá trị lớn hơn rồi thử lại."
+        if "no video parts" in lowered:
+            return "Không tạo được phần video nào.\n\nHãy kiểm tra video rồi thử lại."
+        return "Không thể chia video này.\n\nHãy kiểm tra file rồi thử lại."
+
+    def _show_error_dialog(self, friendly: str, technical_detail: str) -> None:
+        dialog = QMessageBox(self)
+        dialog.setIcon(QMessageBox.Critical)
+        dialog.setWindowTitle("Có lỗi xảy ra")
+        dialog.setText(friendly)
+        close_button = dialog.addButton("Đóng", QMessageBox.AcceptRole)
+        dialog.setDefaultButton(close_button)
+        dialog.setDetailedText(technical_detail)
+        for button in dialog.buttons():
+            if button is not close_button:
+                button.setText("Chi tiết kỹ thuật")
+        dialog.exec()
+
+    def _ask_user(self, title: str, detail: str, confirm_text: str) -> bool:
+        dialog = QMessageBox(self)
+        dialog.setIcon(QMessageBox.Question)
+        dialog.setWindowTitle(title)
+        dialog.setText(detail)
+        confirm_button = dialog.addButton(confirm_text, QMessageBox.AcceptRole)
+        cancel_button = dialog.addButton("Hủy", QMessageBox.RejectRole)
+        dialog.setDefaultButton(cancel_button)
+        dialog.exec()
+        return dialog.clickedButton() is confirm_button
 
     def _on_completed(self, result: SplitResult) -> None:
         self.last_result = result
         self.progress.setValue(100)
-        self.result_title.setText("Video parts are ready")
+        self.result_title.setText("✓ Các phần video đã sẵn sàng")
         largest = max(part.size for part in result.parts)
         self.result_meta.setText(
-            f"{len(result.parts)} {'part' if len(result.parts) == 1 else 'parts'} · {format_duration(result.processed_duration)} processed · largest {format_bytes(largest)}"
+            f"{len(result.parts)} phần · thời lượng {format_duration(result.processed_duration)} · phần lớn nhất {format_bytes(largest)}"
         )
         self.results_tree.clear()
         for index, part in enumerate(result.parts, start=1):
@@ -712,7 +767,7 @@ class MainWindow(QMainWindow):
             )
             item.setData(0, Qt.UserRole, part.path)
             self.results_tree.addTopLevelItem(item)
-            open_button = QPushButton("Open")
+            open_button = QPushButton("Mở")
             open_button.setObjectName("SecondaryButton")
             open_button.clicked.connect(lambda _checked=False, file_path=part.path: QDesktopServices.openUrl(QUrl.fromLocalFile(file_path)))
             self.results_tree.setItemWidget(item, 3, open_button)
@@ -721,14 +776,15 @@ class MainWindow(QMainWindow):
 
     def _on_failed(self, detail: str) -> None:
         self.progress.setVisible(False)
-        self.result_title.setText("Could not create the parts")
-        self.result_meta.setText(detail)
-        QMessageBox.critical(self, "Video processing failed", detail)
+        friendly = self._friendly_error(detail)
+        self.result_title.setText("Không thể chia video")
+        self.result_meta.setText(friendly.replace("\n\n", " "))
+        self._show_error_dialog(friendly, detail)
 
     def _on_cancelled(self) -> None:
         self.progress.setVisible(False)
-        self.result_title.setText("Processing cancelled")
-        self.result_meta.setText("No incomplete output folder was kept.")
+        self.result_title.setText("Đã hủy")
+        self.result_meta.setText("Các file chưa hoàn tất đã được dọn đi.")
 
     def _thread_finished(self) -> None:
         self._set_busy(False)
@@ -737,7 +793,7 @@ class MainWindow(QMainWindow):
 
     def _cancel_processing(self) -> None:
         if self.worker:
-            self.result_title.setText("Cancelling…")
+            self.result_title.setText("Đang hủy…")
             self.worker.cancel()
 
     def _open_output_folder(self) -> None:
@@ -748,9 +804,9 @@ class MainWindow(QMainWindow):
         try:
             theme = resource_path("theme.qss").read_text(encoding="utf-8")
             QApplication.instance().setStyleSheet(theme)
-            QMessageBox.information(self, "Appearance reloaded", "The external theme file was applied without reinstalling the app.")
-        except OSError as error:
-            QMessageBox.warning(self, "Could not reload appearance", str(error))
+            QMessageBox.information(self, "Đã tải lại giao diện", "Giao diện mới đã được áp dụng mà không cần cài lại ứng dụng.")
+        except OSError:
+            QMessageBox.warning(self, "Không thể tải lại giao diện", "Hãy kiểm tra file giao diện rồi thử lại.")
 
     def _update_from_git(self) -> None:
         self.update_button.setEnabled(False)
@@ -761,11 +817,13 @@ class MainWindow(QMainWindow):
             QApplication.restoreOverrideCursor()
             self.update_button.setEnabled(can_update_from_git())
         if not result.success:
-            QMessageBox.warning(self, result.title, result.detail)
+            if result.technical_detail:
+                self._show_error_dialog(result.detail, result.technical_detail)
+            else:
+                QMessageBox.warning(self, result.title, result.detail)
             return
         if result.restart_required:
-            choice = QMessageBox.question(self, result.title, f"{result.detail}\n\nRestart now to apply the updated interface?")
-            if choice == QMessageBox.Yes:
+            if self._ask_user(result.title, f"{result.detail}\n\nKhởi động lại ngay để dùng giao diện mới?", "Khởi động lại"):
                 QProcess.startDetached(sys.executable, sys.argv)
                 QApplication.quit()
             return
@@ -773,12 +831,12 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         if self._busy:
-            choice = QMessageBox.question(
-                self,
-                "Stop processing?",
-                "A video is still being processed. Stop it and close the application?",
+            should_stop = self._ask_user(
+                "Dừng chia video?",
+                "Video vẫn đang được xử lý. Dừng lại và đóng ứng dụng?",
+                "Dừng và đóng",
             )
-            if choice != QMessageBox.Yes:
+            if not should_stop:
                 event.ignore()
                 return
             if self.worker:
@@ -788,8 +846,8 @@ class MainWindow(QMainWindow):
             if self.worker_thread and not self.worker_thread.wait(5000):
                 QMessageBox.warning(
                     self,
-                    "Still stopping",
-                    "The video process is still stopping. Please wait a moment and close the app again.",
+                    "Vẫn đang dừng",
+                    "Ứng dụng vẫn đang dừng quá trình xử lý. Hãy chờ một chút rồi đóng lại.",
                 )
                 event.ignore()
                 return
