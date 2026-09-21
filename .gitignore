@@ -1,0 +1,4 @@
+storage/
+.sites-runtime/
+*.log
+

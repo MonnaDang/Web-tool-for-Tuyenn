@@ -1,0 +1,11 @@
+{
+  "name": "tuyennn-local-toolbox",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A private local toolbox for video and file utilities.",
+  "repository": "https://github.com/MonnaDang/Web-tool-for-Tuyenn.git",
+  "scripts": {
+    "start": "node server.mjs"
+  }
+}
