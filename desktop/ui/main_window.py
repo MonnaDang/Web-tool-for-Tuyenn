@@ -4,10 +4,11 @@ import json
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QProcess, QThread, Qt, QUrl, Signal
-from PySide6.QtGui import QCloseEvent, QDesktopServices, QDragEnterEvent, QDropEvent, QIcon, QPixmap
+from PySide6.QtCore import QEasingCurve, QProcess, QPropertyAnimation, QThread, Qt, QUrl, Signal
+from PySide6.QtGui import QCloseEvent, QDesktopServices, QDragEnterEvent, QDropEvent, QIcon, QPixmap, QResizeEvent
 from PySide6.QtWidgets import (
     QApplication,
+    QBoxLayout,
     QButtonGroup,
     QDoubleSpinBox,
     QFileDialog,
@@ -88,7 +89,7 @@ class DropArea(QFrame):
         super().__init__()
         self.setObjectName("DropArea")
         self.setAcceptDrops(True)
-        self.setMinimumHeight(310)
+        self.setMinimumHeight(230)
         self.setCursor(Qt.PointingHandCursor)
 
         layout = QVBoxLayout(self)
@@ -146,6 +147,40 @@ class DropArea(QFrame):
         super().mousePressEvent(event)
 
 
+class SmoothScrollArea(QScrollArea):
+    def __init__(self) -> None:
+        super().__init__()
+        self._scroll_target = 0
+        self._scroll_animation = QPropertyAnimation(self.verticalScrollBar(), b"value", self)
+        self._scroll_animation.setDuration(150)
+        self._scroll_animation.setEasingCurve(QEasingCurve.OutCubic)
+        self.verticalScrollBar().sliderPressed.connect(self._sync_scroll_target)
+
+    def _sync_scroll_target(self) -> None:
+        self._scroll_target = self.verticalScrollBar().value()
+
+    def wheelEvent(self, event) -> None:
+        if not event.pixelDelta().isNull():
+            super().wheelEvent(event)
+            self._sync_scroll_target()
+            return
+
+        steps = event.angleDelta().y() / 120
+        if not steps:
+            super().wheelEvent(event)
+            return
+
+        bar = self.verticalScrollBar()
+        if self._scroll_animation.state() != QPropertyAnimation.Running:
+            self._scroll_target = bar.value()
+        self._scroll_target = max(bar.minimum(), min(bar.maximum(), self._scroll_target - int(steps * 96)))
+        self._scroll_animation.stop()
+        self._scroll_animation.setStartValue(bar.value())
+        self._scroll_animation.setEndValue(self._scroll_target)
+        self._scroll_animation.start()
+        event.accept()
+
+
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
@@ -158,8 +193,8 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle(f"Hộp công cụ Tuyennn {APP_VERSION}")
         self.setWindowIcon(QIcon(str(resource_path("app_icon.svg"))))
-        self.resize(1260, 820)
-        self.setMinimumSize(980, 680)
+        self.resize(1220, 760)
+        self.setMinimumSize(960, 660)
         self._build_ui()
         self._restore_settings()
         self._refresh_tool_status()
@@ -220,9 +255,9 @@ class MainWindow(QMainWindow):
         sidebar_layout.addWidget(status_card)
 
         self.pages = QStackedWidget()
-        self.pages.addWidget(self._scroll_page(self._build_overview_page()))
+        self.pages.addWidget(self._build_overview_page())
         self.pages.addWidget(self._scroll_page(self._build_video_page()))
-        self.pages.addWidget(self._scroll_page(self._build_updates_page()))
+        self.pages.addWidget(self._build_updates_page())
         self.pages.currentChanged.connect(self._sync_navigation)
 
         root_layout.addWidget(sidebar)
@@ -240,10 +275,12 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def _scroll_page(content: QWidget) -> QScrollArea:
-        scroll = QScrollArea()
+        scroll = SmoothScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.verticalScrollBar().setSingleStep(32)
         scroll.setWidget(content)
         return scroll
 
@@ -252,8 +289,8 @@ class MainWindow(QMainWindow):
         page = QWidget()
         page.setObjectName("Page")
         layout = QVBoxLayout(page)
-        layout.setContentsMargins(42, 36, 42, 42)
-        layout.setSpacing(18)
+        layout.setContentsMargins(32, 28, 32, 28)
+        layout.setSpacing(16)
         return page, layout
 
     @staticmethod
@@ -317,12 +354,14 @@ class MainWindow(QMainWindow):
         heading_row.addWidget(local_badge, 0, Qt.AlignTop)
         layout.addLayout(heading_row)
 
-        workspace = QHBoxLayout()
-        workspace.setSpacing(18)
-        workspace.addWidget(self._build_file_panel(), 6)
-        workspace.addWidget(self._build_settings_panel(), 5)
-        layout.addLayout(workspace)
-        layout.addWidget(self._build_results_panel())
+        self.video_workspace = QBoxLayout(QBoxLayout.LeftToRight)
+        self.video_workspace.setSpacing(16)
+        self.video_workspace.addWidget(self._build_file_panel(), 6)
+        self.video_workspace.addWidget(self._build_settings_panel(), 5)
+        layout.addLayout(self.video_workspace)
+        self.results_panel = self._build_results_panel()
+        self.results_panel.setVisible(False)
+        layout.addWidget(self.results_panel)
         layout.addStretch()
         return page
 
@@ -513,6 +552,9 @@ class MainWindow(QMainWindow):
         self.results_tree.header().setSectionResizeMode(2, QHeaderView.ResizeToContents)
         self.results_tree.header().setSectionResizeMode(3, QHeaderView.ResizeToContents)
         self.results_tree.setAlternatingRowColors(True)
+        self.results_tree.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.results_tree.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.results_tree.setMinimumHeight(0)
         self.results_tree.setVisible(False)
         panel_layout.addWidget(self.results_tree)
         return panel
@@ -621,6 +663,7 @@ class MainWindow(QMainWindow):
             self.output_path.setText(str(path.parent))
         self.result_title.setText("Các phần video sẽ xuất hiện ở đây")
         self.result_meta.setText("Mỗi kết quả là một video riêng và có thể mở ngay.")
+        self.results_panel.setVisible(False)
 
     def _choose_output_folder(self) -> None:
         initial = self.output_path.text() or str(self.input_path.parent if self.input_path else Path.home())
@@ -661,6 +704,7 @@ class MainWindow(QMainWindow):
 
         self._set_busy(True)
         self.last_result = None
+        self.results_panel.setVisible(True)
         self.results_tree.clear()
         self.results_tree.setVisible(False)
         self.open_folder_button.setVisible(False)
@@ -772,6 +816,7 @@ class MainWindow(QMainWindow):
             open_button.clicked.connect(lambda _checked=False, file_path=part.path: QDesktopServices.openUrl(QUrl.fromLocalFile(file_path)))
             self.results_tree.setItemWidget(item, 3, open_button)
         self.results_tree.setVisible(True)
+        self.results_tree.setFixedHeight(self.results_tree.header().height() + len(result.parts) * 48 + 16)
         self.open_folder_button.setVisible(True)
 
     def _on_failed(self, detail: str) -> None:
@@ -852,3 +897,11 @@ class MainWindow(QMainWindow):
                 event.ignore()
                 return
         event.accept()
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        super().resizeEvent(event)
+        if not hasattr(self, "video_workspace"):
+            return
+        direction = QBoxLayout.TopToBottom if event.size().width() < 1120 else QBoxLayout.LeftToRight
+        if self.video_workspace.direction() != direction:
+            self.video_workspace.setDirection(direction)

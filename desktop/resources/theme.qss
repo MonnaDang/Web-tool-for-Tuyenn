@@ -109,5 +109,6 @@ QScrollArea { border: none; background: transparent; }
 QScrollBar:vertical { width: 10px; background: #07111f; }
 QScrollBar::handle:vertical { min-height: 30px; background: #294057; border-radius: 5px; }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: #07111f; }
 
 QToolTip { color: #f4f8fb; background: #13243a; border: 1px solid #39506a; padding: 6px; }
