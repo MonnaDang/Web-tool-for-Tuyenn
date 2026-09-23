@@ -100,6 +100,13 @@ def target_dimensions(width: int, height: int, max_edge: int) -> tuple[int, int]
     return max(1, round(width * ratio)), max(1, round(height * ratio))
 
 
+def suggested_target_edge(images: list[ImageInfo], presets: tuple[int, ...] = (1920, 1280, 800, 480)) -> int | None:
+    if not images:
+        return None
+    smallest_image_edge = min(max(info.width, info.height) for info in images)
+    return next((edge for edge in presets if edge < smallest_image_edge), None)
+
+
 def estimate_output_size(info: ImageInfo, width: int, height: int) -> int:
     pixel_ratio = (width * height) / (info.width * info.height)
     # Pixel count is the most stable preflight signal. The small codec factor reflects

@@ -34,7 +34,7 @@ The video chunker supports:
 The image resizer supports:
 
 - selecting or dropping multiple local images;
-- creating several downscaled resolutions in one batch while preserving aspect ratio;
+- automatically selecting one of four smaller resolution presets while preserving aspect ratio;
 - estimating every output dimension and the approximate total size before processing;
 - background processing, cancellation, and quick access to completed files.
 
@@ -50,8 +50,9 @@ python -m venv .venv
 
 This app is portable and does not use a Windows installer.
 
-- In a Git checkout, open **Updates → Update from GitHub**, or double-click `Update Toolbox.bat`, then restart the app.
-- For a packaged release, extract the newer release over the existing application folder.
+- Starting with version 1.2.0, a packaged release can open **Cập nhật → Kiểm tra cập nhật** to download, verify, install, and restart automatically.
+- In a Git checkout, the same button pulls `main`; `Update Toolbox.bat` remains available as a manual alternative.
+- Moving from a version older than 1.2.0 requires one final manual ZIP replacement before automatic updates become available.
 - User preferences live in `%LOCALAPPDATA%\TuyennnToolbox`, outside the program folder, so an update does not remove them.
 - `resources/theme.qss` is external in a portable build. It can be replaced and reloaded from the Updates page without rebuilding the app.
 

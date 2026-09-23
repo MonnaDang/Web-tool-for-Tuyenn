@@ -35,7 +35,7 @@ from PySide6.QtWidgets import (
 from desktop.services.app_paths import releases_url, resource_path
 from desktop.services.ffmpeg_service import SplitConfig, SplitResult, VideoWorker, locate_video_tools
 from desktop.services.settings_service import SettingsService
-from desktop.services.update_service import can_update_from_git, pull_latest_source
+from desktop.services.update_service import UpdateResult, UpdateWorker, can_update
 from desktop.ui.image_resize_page import ImageResizePage
 
 
@@ -190,6 +190,9 @@ class MainWindow(QMainWindow):
         self.last_result: SplitResult | None = None
         self.worker_thread: QThread | None = None
         self.worker: VideoWorker | None = None
+        self.update_thread: QThread | None = None
+        self.update_worker: UpdateWorker | None = None
+        self._updating = False
         self._busy = False
 
         self.setWindowTitle(f"Hộp công cụ Tuyennn {APP_VERSION}")
@@ -362,7 +365,7 @@ class MainWindow(QMainWindow):
         image_ready.setObjectName("PageKicker")
         image_title = QLabel("Thu nhỏ ảnh")
         image_title.setObjectName("CardTitle")
-        image_detail = QLabel("Tạo nhiều độ phân giải cho nhiều ảnh cùng lúc và xem dung lượng ước tính trước khi bắt đầu.")
+        image_detail = QLabel("Thu nhỏ nhiều ảnh cùng lúc với một trong bốn mức và xem dung lượng ước tính trước khi bắt đầu.")
         image_detail.setObjectName("Muted")
         image_detail.setWordWrap(True)
         image_copy.addWidget(image_ready)
@@ -594,7 +597,13 @@ class MainWindow(QMainWindow):
 
     def _build_updates_page(self) -> QWidget:
         page, layout = self._page_container()
-        layout.addLayout(self._heading("BẢO TRÌ", "Cập nhật mà không cần gỡ ứng dụng.", "Tùy chọn cá nhân được giữ riêng nên vẫn còn nguyên sau mỗi lần cập nhật."))
+        layout.addLayout(
+            self._heading(
+                "BẢO TRÌ",
+                "Cập nhật mà không cần gỡ ứng dụng.",
+                "Ứng dụng có thể tự tải và cài bản phát hành mới. Tùy chọn cá nhân vẫn được giữ nguyên.",
+            )
+        )
         layout.addSpacing(16)
 
         card = QFrame()
@@ -605,15 +614,16 @@ class MainWindow(QMainWindow):
         title = QLabel(f"Hộp công cụ Tuyennn {APP_VERSION}")
         title.setObjectName("CardTitle")
         detail = QLabel(
-            "Nếu nút cập nhật khả dụng, chỉ cần tải bản mới rồi khởi động lại. Với bản gửi qua file ZIP, giải nén bản mới đè lên thư mục ứng dụng cũ. Các tùy chọn đã lưu vẫn được giữ nguyên."
+            "Chọn kiểm tra cập nhật. Nếu có phiên bản mới, ứng dụng sẽ tải gói Windows, kiểm tra file, "
+            "cài đặt rồi tự mở lại."
         )
         detail.setObjectName("Muted")
         detail.setWordWrap(True)
         button_row = QHBoxLayout()
-        self.update_button = QPushButton("Cập nhật ứng dụng")
+        self.update_button = QPushButton("Kiểm tra cập nhật")
         self.update_button.setObjectName("PrimaryButton")
-        self.update_button.setEnabled(can_update_from_git())
-        self.update_button.clicked.connect(self._update_from_git)
+        self.update_button.setEnabled(can_update())
+        self.update_button.clicked.connect(self._update_application)
         releases_button = QPushButton("Xem bản phát hành")
         releases_button.setObjectName("SecondaryButton")
         releases_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(releases_url())))
@@ -626,6 +636,9 @@ class MainWindow(QMainWindow):
         button_row.addStretch()
         card_layout.addWidget(title)
         card_layout.addWidget(detail)
+        self.update_status = QLabel("Sẵn sàng kiểm tra phiên bản mới.")
+        self.update_status.setObjectName("ResultMeta")
+        card_layout.addWidget(self.update_status)
         card_layout.addSpacing(5)
         card_layout.addLayout(button_row)
         layout.addWidget(card)
@@ -886,28 +899,61 @@ class MainWindow(QMainWindow):
         except OSError:
             QMessageBox.warning(self, "Không thể tải lại giao diện", "Hãy kiểm tra file giao diện rồi thử lại.")
 
-    def _update_from_git(self) -> None:
+    def _update_application(self) -> None:
+        if self._updating:
+            return
+        self._updating = True
         self.update_button.setEnabled(False)
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        try:
-            result = pull_latest_source()
-        finally:
-            QApplication.restoreOverrideCursor()
-            self.update_button.setEnabled(can_update_from_git())
+        self.update_button.setText("Đang kiểm tra…")
+        self.update_status.setText("Đang kết nối với GitHub…")
+        self.update_thread = QThread(self)
+        self.update_worker = UpdateWorker()
+        self.update_worker.moveToThread(self.update_thread)
+        self.update_thread.started.connect(self.update_worker.run)
+        self.update_worker.progress.connect(self._on_update_progress)
+        self.update_worker.completed.connect(self._on_update_completed)
+        self.update_worker.finished.connect(self.update_thread.quit)
+        self.update_worker.finished.connect(self.update_worker.deleteLater)
+        self.update_thread.finished.connect(self._update_thread_finished)
+        self.update_thread.finished.connect(self.update_thread.deleteLater)
+        self.update_thread.start()
+
+    def _on_update_progress(self, value: int, detail: str) -> None:
+        self.update_status.setText(f"{detail} · {value}%")
+
+    def _on_update_completed(self, result: UpdateResult) -> None:
+        self._updating = False
         if not result.success:
+            self.update_status.setText(result.detail)
             if result.technical_detail:
                 self._show_error_dialog(result.detail, result.technical_detail)
             else:
                 QMessageBox.warning(self, result.title, result.detail)
             return
         if result.restart_required:
-            if self._ask_user(result.title, f"{result.detail}\n\nKhởi động lại ngay để dùng giao diện mới?", "Khởi động lại"):
-                QProcess.startDetached(sys.executable, sys.argv)
+            self.update_status.setText(result.title)
+            if self._ask_user(result.title, f"{result.detail}\n\nCài đặt và khởi động lại ngay?", "Cài đặt ngay"):
+                if result.restart_program:
+                    QProcess.startDetached(result.restart_program, result.restart_arguments)
+                else:
+                    QProcess.startDetached(sys.executable, sys.argv)
                 QApplication.quit()
             return
+        self.update_status.setText(result.detail)
         QMessageBox.information(self, result.title, result.detail)
 
+    def _update_thread_finished(self) -> None:
+        self._updating = False
+        self.update_worker = None
+        self.update_thread = None
+        self.update_button.setText("Kiểm tra cập nhật")
+        self.update_button.setEnabled(can_update())
+
     def closeEvent(self, event: QCloseEvent) -> None:
+        if self._updating:
+            QMessageBox.information(self, "Đang chuẩn bị cập nhật", "Hãy chờ quá trình tải và kiểm tra bản cập nhật hoàn tất.")
+            event.ignore()
+            return
         if self.image_page.busy:
             should_stop = self._ask_user(
                 "Dừng thu nhỏ ảnh?",

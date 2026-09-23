@@ -6,7 +6,7 @@ from PySide6.QtCore import QThread, Qt, QUrl, Signal
 from PySide6.QtGui import QDesktopServices, QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import (
     QBoxLayout,
-    QCheckBox,
+    QButtonGroup,
     QFileDialog,
     QFrame,
     QHBoxLayout,
@@ -16,8 +16,8 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QPushButton,
+    QRadioButton,
     QSizePolicy,
-    QSpinBox,
     QTreeWidget,
     QTreeWidgetItem,
     QVBoxLayout,
@@ -31,6 +31,7 @@ from desktop.services.image_resize_service import (
     ResizeResult,
     estimate_output_size,
     probe_image,
+    suggested_target_edge,
     target_dimensions,
 )
 from desktop.services.settings_service import SettingsService
@@ -169,7 +170,7 @@ class ImageResizePage(QWidget):
             self._heading(
                 "CÔNG CỤ 02",
                 "Thu nhỏ ảnh",
-                "Chọn nhiều ảnh và nhiều độ phân giải. Kích thước cùng dung lượng ước tính sẽ hiện trước khi xử lý.",
+                "Chọn nhiều ảnh và một độ phân giải nhỏ hơn ảnh gốc. Kích thước cùng dung lượng ước tính sẽ hiện trước khi xử lý.",
             ),
             1,
         )
@@ -232,28 +233,17 @@ class ImageResizePage(QWidget):
             )
         )
 
-        self.resolution_checks: dict[int, QCheckBox] = {}
+        self.resolution_group = QButtonGroup(self)
+        self.resolution_group.setExclusive(True)
+        self.resolution_options: dict[int, QRadioButton] = {}
         preset_row = QHBoxLayout()
         for edge in (1920, 1280, 800, 480):
-            check = QCheckBox(f"{edge}px")
-            check.setChecked(edge in {1920, 1280})
-            check.toggled.connect(self._refresh_estimates)
-            self.resolution_checks[edge] = check
-            preset_row.addWidget(check)
+            option = QRadioButton(f"{edge}px")
+            option.toggled.connect(self._refresh_estimates)
+            self.resolution_group.addButton(option, edge)
+            self.resolution_options[edge] = option
+            preset_row.addWidget(option)
         panel_layout.addLayout(preset_row)
-
-        custom_row = QHBoxLayout()
-        self.custom_check = QCheckBox("Tùy chỉnh")
-        self.custom_check.toggled.connect(self._refresh_estimates)
-        self.custom_edge = QSpinBox()
-        self.custom_edge.setRange(64, 12000)
-        self.custom_edge.setSingleStep(100)
-        self.custom_edge.setSuffix(" px")
-        self.custom_edge.setValue(1000)
-        self.custom_edge.valueChanged.connect(self._refresh_estimates)
-        custom_row.addWidget(self.custom_check)
-        custom_row.addWidget(self.custom_edge, 1)
-        panel_layout.addLayout(custom_row)
 
         output_label = QLabel("Nơi lưu kết quả")
         output_label.setStyleSheet("font-weight:700;")
@@ -281,6 +271,7 @@ class ImageResizePage(QWidget):
         action_row.addWidget(self.cancel_button)
         panel_layout.addLayout(action_row)
         panel_layout.addStretch()
+        self._refresh_resolution_availability()
         return panel
 
     def _build_estimate_panel(self) -> QFrame:
@@ -387,6 +378,8 @@ class ImageResizePage(QWidget):
             self.settings.set_value("image/input_directory", str(Path(added[0].path).parent))
             if not self.output_path.text():
                 self.output_path.setText(str(Path(added[0].path).parent))
+            self._select_default_resolution()
+        self._refresh_resolution_availability()
         self._refresh_image_list()
         self._refresh_estimates()
         if errors:
@@ -396,6 +389,8 @@ class ImageResizePage(QWidget):
         if self._busy:
             return
         self.images.clear()
+        self._clear_resolution_selection()
+        self._refresh_resolution_availability()
         self._refresh_image_list()
         self._refresh_estimates()
 
@@ -411,10 +406,27 @@ class ImageResizePage(QWidget):
         )
 
     def _selected_edges(self) -> list[int]:
-        edges = [edge for edge, check in self.resolution_checks.items() if check.isChecked()]
-        if self.custom_check.isChecked():
-            edges.append(self.custom_edge.value())
-        return sorted(set(edges), reverse=True)
+        checked = self.resolution_group.checkedId()
+        return [checked] if checked > 0 else []
+
+    def _clear_resolution_selection(self) -> None:
+        self.resolution_group.setExclusive(False)
+        for option in self.resolution_options.values():
+            option.setChecked(False)
+        self.resolution_group.setExclusive(True)
+
+    def _select_default_resolution(self) -> None:
+        self._clear_resolution_selection()
+        if not self.images:
+            return
+        default_edge = suggested_target_edge(self.images)
+        if default_edge:
+            self.resolution_options[default_edge].setChecked(True)
+
+    def _refresh_resolution_availability(self) -> None:
+        smallest_image_edge = min((max(info.width, info.height) for info in self.images), default=0)
+        for edge, option in self.resolution_options.items():
+            option.setEnabled(not self._busy and edge < smallest_image_edge)
 
     def _refresh_estimates(self, *_args) -> None:
         self.estimate_tree.clear()
@@ -494,9 +506,7 @@ class ImageResizePage(QWidget):
         self.resize_button.setText("Đang thu nhỏ ảnh…" if busy else "Tạo ảnh đã thu nhỏ  →")
         self.cancel_button.setVisible(busy)
         self.drop_area.setEnabled(not busy)
-        for check in [*self.resolution_checks.values(), self.custom_check]:
-            check.setEnabled(not busy)
-        self.custom_edge.setEnabled(not busy)
+        self._refresh_resolution_availability()
         self._refresh_estimates()
 
     def _on_progress(self, value: int, detail: str) -> None:
