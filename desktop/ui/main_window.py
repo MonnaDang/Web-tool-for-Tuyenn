@@ -36,6 +36,7 @@ from desktop.services.app_paths import releases_url, resource_path
 from desktop.services.ffmpeg_service import SplitConfig, SplitResult, VideoWorker, locate_video_tools
 from desktop.services.settings_service import SettingsService
 from desktop.services.update_service import can_update_from_git, pull_latest_source
+from desktop.ui.image_resize_page import ImageResizePage
 
 
 try:
@@ -234,9 +235,11 @@ class MainWindow(QMainWindow):
         self.nav_group.setExclusive(True)
         self.overview_nav = self._nav_button("Trang chủ", 0)
         self.video_nav = self._nav_button("Chia video", 1)
-        self.updates_nav = self._nav_button("Cập nhật", 2)
+        self.image_nav = self._nav_button("Thu nhỏ ảnh", 2)
+        self.updates_nav = self._nav_button("Cập nhật", 3)
         sidebar_layout.addWidget(self.overview_nav)
         sidebar_layout.addWidget(self.video_nav)
+        sidebar_layout.addWidget(self.image_nav)
         sidebar_layout.addWidget(self.updates_nav)
         sidebar_layout.addStretch()
 
@@ -257,6 +260,8 @@ class MainWindow(QMainWindow):
         self.pages = QStackedWidget()
         self.pages.addWidget(self._build_overview_page())
         self.pages.addWidget(self._scroll_page(self._build_video_page()))
+        self.image_page = ImageResizePage(self.settings)
+        self.pages.addWidget(self._scroll_page(self.image_page))
         self.pages.addWidget(self._build_updates_page())
         self.pages.currentChanged.connect(self._sync_navigation)
 
@@ -312,7 +317,7 @@ class MainWindow(QMainWindow):
 
     def _build_overview_page(self) -> QWidget:
         page, layout = self._page_container()
-        layout.addLayout(self._heading("GÓC NHỎ CỦA CẬU", "Công cụ gọn nhẹ, dùng ngay trên máy.", "Chuẩn bị video riêng tư mà không cần gửi file lên mạng."))
+        layout.addLayout(self._heading("GÓC NHỎ CỦA CẬU", "Công cụ gọn nhẹ, dùng ngay trên máy.", "Chuẩn bị ảnh và video riêng tư mà không cần gửi file lên mạng."))
         layout.addSpacing(18)
 
         card = QFrame()
@@ -342,6 +347,34 @@ class MainWindow(QMainWindow):
         card_layout.addLayout(copy, 1)
         card_layout.addWidget(open_button, 0, Qt.AlignVCenter)
         layout.addWidget(card)
+
+        image_card = QFrame()
+        image_card.setObjectName("ToolCard")
+        image_card_layout = QHBoxLayout(image_card)
+        image_card_layout.setContentsMargins(26, 26, 26, 26)
+        image_card_layout.setSpacing(18)
+        image_symbol = QLabel("02")
+        image_symbol.setObjectName("StepBadge")
+        image_symbol.setAlignment(Qt.AlignCenter)
+        image_copy = QVBoxLayout()
+        image_copy.setSpacing(6)
+        image_ready = QLabel("SẴN SÀNG")
+        image_ready.setObjectName("PageKicker")
+        image_title = QLabel("Thu nhỏ ảnh")
+        image_title.setObjectName("CardTitle")
+        image_detail = QLabel("Tạo nhiều độ phân giải cho nhiều ảnh cùng lúc và xem dung lượng ước tính trước khi bắt đầu.")
+        image_detail.setObjectName("Muted")
+        image_detail.setWordWrap(True)
+        image_copy.addWidget(image_ready)
+        image_copy.addWidget(image_title)
+        image_copy.addWidget(image_detail)
+        image_open = QPushButton("Mở công cụ  →")
+        image_open.setObjectName("PrimaryButton")
+        image_open.clicked.connect(lambda: self._show_page(2))
+        image_card_layout.addWidget(image_symbol, 0, Qt.AlignTop)
+        image_card_layout.addLayout(image_copy, 1)
+        image_card_layout.addWidget(image_open, 0, Qt.AlignVCenter)
+        layout.addWidget(image_card)
         layout.addStretch()
         return page
 
@@ -875,6 +908,19 @@ class MainWindow(QMainWindow):
         QMessageBox.information(self, result.title, result.detail)
 
     def closeEvent(self, event: QCloseEvent) -> None:
+        if self.image_page.busy:
+            should_stop = self._ask_user(
+                "Dừng thu nhỏ ảnh?",
+                "Ảnh vẫn đang được xử lý. Dừng lại và đóng ứng dụng?",
+                "Dừng và đóng",
+            )
+            if not should_stop:
+                event.ignore()
+                return
+            if not self.image_page.wait_for_stop():
+                QMessageBox.warning(self, "Vẫn đang dừng", "Ứng dụng vẫn đang dừng quá trình xử lý ảnh. Hãy chờ một chút rồi đóng lại.")
+                event.ignore()
+                return
         if self._busy:
             should_stop = self._ask_user(
                 "Dừng chia video?",

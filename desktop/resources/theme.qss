@@ -6,7 +6,7 @@ QWidget {
 }
 
 QMainWindow, QDialog, QWidget#Page { background: #07111f; }
-QLabel, QRadioButton { background: transparent; }
+QLabel, QRadioButton, QCheckBox { background: transparent; }
 
 QFrame#Sidebar {
     background: #050e1a;
@@ -74,11 +74,11 @@ QPushButton#LinkButton {
     border: none; font-weight: 700;
 }
 
-QLineEdit, QDoubleSpinBox {
+QLineEdit, QDoubleSpinBox, QSpinBox {
     min-height: 42px; padding: 0 11px; color: #f4f8fb; background: #061320;
     border: 1px solid #263b50; border-radius: 9px; selection-background-color: #245e65;
 }
-QLineEdit:focus, QDoubleSpinBox:focus { border-color: #5de2c7; }
+QLineEdit:focus, QDoubleSpinBox:focus, QSpinBox:focus { border-color: #5de2c7; }
 QLineEdit:read-only { color: #b8c6d3; background: #0a1725; }
 QPlainTextEdit {
     color: #dce7ef; background: #061320; border: 1px solid #263b50;
@@ -88,6 +88,11 @@ QPlainTextEdit {
 QRadioButton { spacing: 9px; color: #dce7ef; font-weight: 650; }
 QRadioButton::indicator { width: 16px; height: 16px; border-radius: 8px; border: 1px solid #476077; background: #081624; }
 QRadioButton::indicator:checked { border: 5px solid #5de2c7; }
+QCheckBox { spacing: 7px; color: #dce7ef; font-weight: 650; }
+QCheckBox::indicator {
+    width: 17px; height: 17px; background: #081624; border: 1px solid #476077; border-radius: 5px;
+}
+QCheckBox::indicator:checked { background: #5de2c7; border-color: #5de2c7; }
 
 QProgressBar {
     min-height: 9px; max-height: 9px; background: #091725; border: none; border-radius: 4px;

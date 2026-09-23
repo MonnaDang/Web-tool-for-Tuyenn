@@ -1,6 +1,6 @@
 # Tuyennn Toolbox
 
-A private Windows desktop toolbox built with Python and PySide6. Video processing happens on the computer through FFmpeg; files are not uploaded to an online service. The desktop GUI follows the Vietnamese-first **Midnight Mint** design system.
+A private Windows desktop toolbox built with Python and PySide6. Image and video processing happens on the computer; files are not uploaded to an online service. The desktop GUI follows the Vietnamese-first **Midnight Mint** design system.
 
 ## Project layout
 
@@ -30,6 +30,13 @@ The video chunker supports:
 - optional removal from the beginning and/or end;
 - fast lossless splitting or precise re-encoding;
 - background processing, progress, cancellation, and verified output files.
+
+The image resizer supports:
+
+- selecting or dropping multiple local images;
+- creating several downscaled resolutions in one batch while preserving aspect ratio;
+- estimating every output dimension and the approximate total size before processing;
+- background processing, cancellation, and quick access to completed files.
 
 For development:
 
